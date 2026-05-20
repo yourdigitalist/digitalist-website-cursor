@@ -4954,7 +4954,18 @@ p {
   grid-row-gap: 39px;
   justify-content: space-around;
   width: 100vw;
+  flex: none;
   display: flex;
+}
+
+@keyframes logo-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
 .brand-txt {
@@ -4975,6 +4986,14 @@ p {
   padding-bottom: 0;
   display: flex;
   overflow: hidden;
+  animation: logo-marquee-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee_wrap {
+    animation: none;
+  }
 }
 
 .div-block-195 {
