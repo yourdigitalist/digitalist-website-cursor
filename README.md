@@ -1,14 +1,14 @@
 # Digitalist website (Cursor + Vercel)
 
-This repo wraps your **Webflow export** with **Next.js** so we can add `/admin`, Supabase, and a CMS merge step later—without rebuilding the public design in React.
+This repo wraps your **Webflow export** with **Next.js** so we can add `/admin`, Supabase, and a CMS merge step—without rebuilding the public design in React.
 
 ## What’s in the repo
 
 | Path | Purpose |
 |------|--------|
 | [`public/`](public/) | Static Webflow site: HTML, `css/`, `js/`, `images/` (served as-is; URLs match the export). |
-| [`webflow/`](webflow/) | Full mirror of the export (HTML, assets, and [`webflow/CMS/`](webflow/CMS/) CSVs) for scripts and future build-time merging. |
-| [`src/app/`](src/app/) | Next.js App Router (minimal for now; homepage is the static Webflow file). |
+| [`webflow/`](webflow/) | Full mirror of the export (HTML, assets, and [`webflow/CMS/`](webflow/CMS/) CSVs) for build-time merging. |
+| [`src/app/`](src/app/) | Next.js App Router (`/admin`, middleware). |
 
 ## Local dev
 
@@ -19,41 +19,66 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — `/` rewrites to `/index.html` (same content as the Webflow `index.html`).
 
+Copy [`.env.example`](.env.example) to `.env.local` and add your Supabase keys when using `/admin` or `seed:supabase`.
+
 ## Git + GitHub
 
 Remote: [github.com/yourdigitalist/digitalist-website-cursor](https://github.com/yourdigitalist/digitalist-website-cursor)
-
-```bash
-git add -A
-git status
-git commit -m "Initial Next.js + Webflow export scaffold"
-git push -u origin main
-```
-
-Use **GitHub Desktop** or Cursor’s Source Control panel the same way; ensure GitHub authentication (HTTPS or SSH) is set up on your machine.
 
 ## Vercel
 
 1. Import this repo in the [Vercel dashboard](https://vercel.com/new).
 2. Framework preset: **Next.js** (default).
-3. Deploy — no environment variables required yet.
+3. Add environment variables (see **Supabase** below), then deploy.
 
 ## CMS merge (Stage 1)
 
-Before `dev` / `build`, the script `scripts/merge-cms.mjs` runs automatically. It reads **`webflow/*.html`** (templates) and **`webflow/CMS/*.csv`**, then writes merged HTML into **`public/`**.
+Before `dev` / `build`, `scripts/merge-cms.mjs` runs automatically. It reads **`webflow/*.html`** and **`webflow/CMS/*.csv`**, then writes merged HTML into **`public/`**.
 
-**Currently merged:** `index.html` — home testimonials (swiper) + featured portfolio grid (with category chips).
-
-To run only the merge:
+**Merged pages:** `index.html`, `portfolio.html`, `services.html`, `read.html`. Collection **detail** pages (`detail_*.html`) are still templates until we add slug-based merge.
 
 ```bash
 npm run merge-cms
 ```
 
-Edit content in **`webflow/CMS/`** (or re-export from Webflow into that folder), then run `merge-cms` again so `public/` updates.
+## Supabase (project `exyqeotxncuzqeadreid` only)
+
+Schema, RLS, and `is_admin()` are applied on **this project only** (ref `exyqeotxncuzqeadreid`). Tables: `portfolio_categories`, `portfolios`, `testimonials`, `articles`, `admin_allowlist`.
+
+### Environment variables (Vercel + `.env.local`)
+
+| Variable | Where |
+|----------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://exyqeotxncuzqeadreid.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → anon public |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Local only** for seeding; never expose to the browser |
+
+### Auth + redirects
+
+1. Supabase → **Authentication** → enable **Email** provider.
+2. **URL configuration**: add your production URL and `http://localhost:3000` under **Site URL** / **Redirect URLs** (include `http://localhost:3000/**` and `https://<your-vercel-domain>/**` so magic links return to `/admin`).
+
+### Admin allowlist
+
+Only emails listed in **`admin_allowlist`** can use admin RPCs after sign-in. A default row was inserted for `hello@yourdigitalist.com`. Add or change rows in the **Table Editor** for the account you use with magic link.
+
+### Seed database from Webflow CSVs (one-off)
+
+```bash
+export NEXT_PUBLIC_SUPABASE_URL=https://exyqeotxncuzqeadreid.supabase.co
+export SUPABASE_SERVICE_ROLE_KEY=your_service_role_secret
+npm run seed:supabase
+```
+
+### `/admin`
+
+- [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — magic link sign-in.
+- [http://localhost:3000/admin](http://localhost:3000/admin) — dashboard (row counts + link to Supabase Table Editor).
+
+The public site still comes from **merged static HTML**; the next step is optional: read from Supabase at build time instead of CSV.
 
 ## Next steps (progressive)
 
-1. **Extend merge** — `portfolio.html`, `services.html`, `read.html`, and collection detail templates (`detail_*.html`) using the same pattern.
-2. **Supabase** — tables + seed from CSV; merge reads DB instead of CSV (Stage 2).
-3. **`/admin`** — simple auth + forms; publish triggers rebuild or revalidation.
+1. **Detail pages** — merge `detail_portfolio.html` / `detail_good-reads.html` from DB or CSV by `slug`.
+2. **Build from Supabase** — extend `merge-cms.mjs` to prefer Supabase when env is set.
+3. **In-app editors** — replace Table Editor links with forms + Server Actions.
