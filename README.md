@@ -19,7 +19,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — `/` rewrites to `/index.html` (same content as the Webflow `index.html`).
 
-Copy [`.env.example`](.env.example) to `.env.local` and add your Supabase keys when using `/admin` or `seed:supabase`.
+Copy [`.env.example`](.env.example) to `.env.local` and add your Supabase keys when using `/admin` or `seed:supabase`. Add **Resend** keys for the contact form (see **Contact form** below).
+
+## Contact form (Resend)
+
+The **Start Project** form on [`public/contact.html`](public/contact.html) posts to **`/api/contact`**, which sends email via [Resend](https://resend.com).
+
+| Variable | Where |
+|----------|--------|
+| `RESEND_API_KEY` | Resend → API Keys (server-only) |
+| `RESEND_FROM` | Verified sender, e.g. `Digitalist <onboarding@resend.dev>` for tests, or your domain after DNS verification |
+| `CONTACT_TO_EMAIL` | Optional. Inbox that receives submissions (defaults to `marina@yourdigitalist.com`) |
+
+Set the same variables on **Vercel → Environment Variables** for production.
+
+With **`onboarding@resend.dev`**, Resend may restrict who you can send **to** until you verify a domain—verify `yourdigitalist.com` (or add the domain Resend gives you) for full production use.
 
 ## Git + GitHub
 
@@ -29,7 +43,7 @@ Remote: [github.com/yourdigitalist/digitalist-website-cursor](https://github.com
 
 1. Import this repo in the [Vercel dashboard](https://vercel.com/new).
 2. Framework preset: **Next.js** (default).
-3. Add environment variables (see **Supabase** below), then deploy.
+3. Add environment variables (Supabase for `/admin`, Resend for the contact form — see sections below), then deploy.
 
 ## CMS merge (Stage 1)
 
