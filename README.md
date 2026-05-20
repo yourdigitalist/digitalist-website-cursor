@@ -55,12 +55,13 @@ Schema, RLS, and `is_admin()` are applied on **this project only** (ref `exyqeot
 
 ### Auth + redirects
 
-1. Supabase → **Authentication** → enable **Email** provider.
-2. **URL configuration**: add your production URL and `http://localhost:3000` under **Site URL** / **Redirect URLs** (include `http://localhost:3000/**` and `https://<your-vercel-domain>/**` so magic links return to `/admin`).
+1. Supabase → **Authentication** → **Providers** → **Email** — enable it (required for password sign-in).
+2. Create your admin user: **Authentication → Users → Add user** — set **email** and **password** (same email as in `admin_allowlist`).
+3. **URL configuration**: set **Site URL** to your app (e.g. `https://your-project.vercel.app` or `http://localhost:3000`). Redirect URLs can include `http://localhost:3000/**` and your production URL for future flows (e.g. password reset emails).
 
 ### Admin allowlist
 
-Only emails listed in **`admin_allowlist`** can use admin RPCs after sign-in. A default row was inserted for `hello@yourdigitalist.com`. Add or change rows in the **Table Editor** for the account you use with magic link.
+Only emails listed in **`admin_allowlist`** can use the dashboard after sign-in. Add or change rows in the **Table Editor** for the account you use (e.g. `marina@yourdigitalist.com`).
 
 ### Seed database from Webflow CSVs (one-off)
 
@@ -72,7 +73,7 @@ npm run seed:supabase
 
 ### `/admin`
 
-- [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — magic link sign-in.
+- [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — **email + password** sign-in.
 - [http://localhost:3000/admin](http://localhost:3000/admin) — dashboard (row counts + link to Supabase Table Editor).
 
 The public site still comes from **merged static HTML**; the next step is optional: read from Supabase at build time instead of CSV.

@@ -2,39 +2,38 @@
 
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const err = searchParams.get("error");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle",
-  );
+  const [password, setPassword] = useState("");
+  const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("sending");
+    setPending(true);
     setMessage("");
     try {
       const supabase = createSupabaseBrowser();
-      const redirectTo = `${window.location.origin}/admin`;
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        options: { emailRedirectTo: redirectTo },
+        password,
       });
       if (error) {
-        setStatus("error");
         setMessage(error.message);
         return;
       }
-      setStatus("sent");
-      setMessage("Check your email for the login link.");
+      router.push("/admin");
+      router.refresh();
     } catch {
-      setStatus("error");
-      setMessage("Could not start sign-in. Is Supabase configured?");
+      setMessage("Could not sign in. Is Supabase configured?");
+    } finally {
+      setPending(false);
     }
   }
 
@@ -42,9 +41,14 @@ function LoginForm() {
     <main>
       <h1 className="text-2xl font-semibold">Admin sign in</h1>
       <p className="mt-2 text-sm text-zinc-600">
-        Magic link only. Your email must be in the{" "}
+        Email and password (Supabase Auth). Your email must be in the{" "}
         <code className="rounded bg-zinc-200 px-1">admin_allowlist</code> table
-        in Supabase (project <strong>exyqeotxncuzqeadreid</strong> only).
+        to use the dashboard after you sign in.
+      </p>
+      <p className="mt-2 text-sm text-zinc-600">
+        First time: create the user in Supabase →{" "}
+        <strong>Authentication → Users → Add user</strong> (set email + password,
+        or send invite and set a password).
       </p>
       {err === "forbidden" && (
         <p className="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
@@ -63,21 +67,30 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-base"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder="marina@yourdigitalist.com"
+          />
+        </label>
+        <label className="block text-sm font-medium">
+          Password
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-base"
+            autoComplete="current-password"
           />
         </label>
         <button
           type="submit"
-          disabled={status === "sending"}
+          disabled={pending}
           className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {status === "sending" ? "Sending…" : "Email me a link"}
+          {pending ? "Signing in…" : "Sign in"}
         </button>
       </form>
       {message && (
-        <p
-          className={`mt-4 text-sm ${status === "error" ? "text-red-700" : "text-zinc-700"}`}
-        >
+        <p className="mt-4 text-sm text-red-700" role="alert">
           {message}
         </p>
       )}
