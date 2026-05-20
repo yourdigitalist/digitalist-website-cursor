@@ -7,12 +7,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load } from "cheerio";
 import { parse } from "csv-parse/sync";
+import { loadCmsFromSupabaseIfConfigured } from "./cms-supabase-load.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const WEBFLOW = path.join(ROOT, "webflow");
 const PUBLIC = path.join(ROOT, "public");
 const CMS = path.join(WEBFLOW, "CMS");
+
+/** When set by main(), loaders read from Supabase-shaped rows instead of CSV files. */
+let supabaseCms = null;
 
 function readCsv(fileName) {
   const p = path.join(CMS, fileName);
@@ -37,6 +41,7 @@ function isTruthyCsv(val) {
 }
 
 function loadCategoryMap() {
+  if (supabaseCms?.categoryMap) return supabaseCms.categoryMap;
   const rows = readCsv(
     "Digitalist - Portfolio Categories - 65950c2cb486e312b0cb23c1.csv",
   );
@@ -49,7 +54,7 @@ function loadCategoryMap() {
 }
 
 function loadTestimonials() {
-  const rows = readCsv(
+  const rows = supabaseCms?.testimonials ?? readCsv(
     "Digitalist - Testimonials - 697740fff0f553a06edb4057.csv",
   );
   const sorted = rows
@@ -73,7 +78,7 @@ function loadTestimonials() {
 }
 
 function loadFeaturedPortfolios() {
-  const rows = readCsv(
+  const rows = supabaseCms?.portfolios ?? readCsv(
     "Digitalist - Portfolios - 65950bfde87a28467fc3f42e.csv",
   );
   return rows
@@ -84,7 +89,7 @@ function loadFeaturedPortfolios() {
 
 /** All published portfolio items (for portfolio + services pages). */
 function loadPublishedPortfolios() {
-  const rows = readCsv(
+  const rows = supabaseCms?.portfolios ?? readCsv(
     "Digitalist - Portfolios - 65950bfde87a28467fc3f42e.csv",
   );
   return rows
@@ -98,7 +103,7 @@ function loadPublishedPortfolios() {
 }
 
 function loadPublishedArticles() {
-  const rows = readCsv(
+  const rows = supabaseCms?.articles ?? readCsv(
     "Digitalist - Articles - 657bb758af4d44e56a434824.csv",
   );
   return rows
@@ -434,7 +439,8 @@ function mergeDetailPortfolioHtml(categoryBySlug) {
   });
 }
 
-function main() {
+async function main() {
+  supabaseCms = await loadCmsFromSupabaseIfConfigured();
   const categoryBySlug = loadCategoryMap();
   mergeIndexHtml(categoryBySlug);
   mergePortfolioHtml(categoryBySlug);

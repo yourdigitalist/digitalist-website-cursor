@@ -87,10 +87,10 @@ npm run seed:supabase
 
 ### `/admin`
 
-- [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — **email + password** sign-in.
-- [http://localhost:3000/admin](http://localhost:3000/admin) — dashboard (row counts + link to Supabase Table Editor).
+- [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — email + password sign-in.
+- [http://localhost:3000/admin](http://localhost:3000/admin) — **CMS dashboard**: edit portfolios, articles, testimonials, and categories with forms and image upload (Supabase Storage bucket `cms-media`).
 
-The public site still comes from **merged static HTML**; the next step is optional: read from Supabase at build time instead of CSV.
+**Publishing to the live site:** `merge-cms` reads from **Supabase** when `SUPABASE_SERVICE_ROLE_KEY` is set (add it to Vercel build env). Otherwise it falls back to `webflow/CMS/*.csv`. After editing in admin, trigger a **redeploy** (or run `npm run merge-cms` locally) so `public/*.html` updates.
 
 ## Next steps (progressive)
 

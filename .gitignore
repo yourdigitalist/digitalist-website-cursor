@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# generated seed SQL chunks (optional)
+scripts/seed-chunks/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
