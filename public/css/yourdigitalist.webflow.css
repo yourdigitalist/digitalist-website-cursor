@@ -4935,6 +4935,8 @@ p {
   width: 100px;
   min-width: 100px;
   max-width: 140px;
+  height: auto;
+  flex: none;
 }
 
 .logo-sec-container {
@@ -4950,10 +4952,9 @@ p {
 }
 
 .static-marquee_logos {
-  grid-column-gap: 39px;
-  grid-row-gap: 39px;
-  justify-content: space-around;
-  width: 100vw;
+  align-items: center;
+  gap: 39px;
+  padding-right: 39px;
   flex: none;
   display: flex;
 }
@@ -4979,13 +4980,10 @@ p {
 }
 
 .marquee_wrap {
-  grid-column-gap: 10px;
-  grid-row-gap: 10px;
-  width: 200vw;
+  width: max-content;
   padding-top: 20px;
   padding-bottom: 0;
   display: flex;
-  overflow: hidden;
   animation: logo-marquee-scroll 35s linear infinite;
   will-change: transform;
 }
@@ -7878,16 +7876,8 @@ p {
     padding-right: 15px;
   }
 
-  .static-marquee_logos {
-    width: 200vw;
-  }
-
   .brand-txt {
     pointer-events: auto;
-  }
-
-  .marquee_wrap {
-    width: 400vw;
   }
 
   .count-sec-divider {
@@ -10316,14 +10306,6 @@ p {
 
   .section-3 {
     padding-top: 140px;
-  }
-
-  .static-marquee_logos {
-    width: 400vw;
-  }
-
-  .marquee_wrap {
-    width: 800vw;
   }
 
   .count-block {
