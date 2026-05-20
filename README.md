@@ -38,8 +38,22 @@ Use **GitHub Desktop** or Cursor’s Source Control panel the same way; ensure G
 2. Framework preset: **Next.js** (default).
 3. Deploy — no environment variables required yet.
 
+## CMS merge (Stage 1)
+
+Before `dev` / `build`, the script `scripts/merge-cms.mjs` runs automatically. It reads **`webflow/*.html`** (templates) and **`webflow/CMS/*.csv`**, then writes merged HTML into **`public/`**.
+
+**Currently merged:** `index.html` — home testimonials (swiper) + featured portfolio grid (with category chips).
+
+To run only the merge:
+
+```bash
+npm run merge-cms
+```
+
+Edit content in **`webflow/CMS/`** (or re-export from Webflow into that folder), then run `merge-cms` again so `public/` updates.
+
 ## Next steps (progressive)
 
-1. **CMS hydration** — fill empty `w-dyn-*` regions from `CMS/*.csv` at build time (templates stay Webflow-generated).
-2. **Supabase** — tables + seed from CSV.
+1. **Extend merge** — `portfolio.html`, `services.html`, `read.html`, and collection detail templates (`detail_*.html`) using the same pattern.
+2. **Supabase** — tables + seed from CSV; merge reads DB instead of CSV (Stage 2).
 3. **`/admin`** — simple auth + forms; publish triggers rebuild or revalidation.
