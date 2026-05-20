@@ -35,7 +35,7 @@ Remote: [github.com/yourdigitalist/digitalist-website-cursor](https://github.com
 
 Before `dev` / `build`, `scripts/merge-cms.mjs` runs automatically. It reads **`webflow/*.html`** and **`webflow/CMS/*.csv`**, then writes merged HTML into **`public/`**.
 
-**Merged pages:** `index.html`, `portfolio.html`, `services.html`, `read.html`. Collection **detail** pages (`detail_*.html`) are still templates until we add slug-based merge.
+**Merged pages:** `index.html`, `portfolio.html`, `services.html`, `read.html`, and **`detail_portfolio.html`** (embeds CSV data as JSON; `public/js/cms-portfolio-detail.js` fills the page from `?slug=`). **`detail_good-reads.html`** is still a template until article detail merge is added.
 
 ```bash
 npm run merge-cms
@@ -80,6 +80,6 @@ The public site still comes from **merged static HTML**; the next step is option
 
 ## Next steps (progressive)
 
-1. **Detail pages** — merge `detail_portfolio.html` / `detail_good-reads.html` from DB or CSV by `slug`.
+1. **Article detail** — merge `detail_good-reads.html` by `slug` (portfolio detail is done via CSV + client hydrate).
 2. **Build from Supabase** — extend `merge-cms.mjs` to prefer Supabase when env is set.
 3. **In-app editors** — replace Table Editor links with forms + Server Actions.

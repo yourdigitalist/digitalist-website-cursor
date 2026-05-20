@@ -111,6 +111,33 @@ function loadPublishedArticles() {
     });
 }
 
+/** Minimal fields for client-side `detail_portfolio.html?slug=` hydration. */
+function buildPortfolioDetailPayloadRows() {
+  return loadPublishedPortfolios().map((row) => ({
+    slug: String(row.Slug || "").trim(),
+    name: String(row.Name || "").trim(),
+    clientLogo: String(row["Client Logo"] || "").trim(),
+    clientName: String(row["Client Name"] || "").trim(),
+    clientIndustry: String(row["Client Industry"] || "").trim(),
+    date: String(row.Date || "").trim(),
+    mainImage: String(
+      row["Main Image"] || row["Thumbnail image"] || "",
+    ).trim(),
+    postSummary: String(row["Post Summary"] || "")
+      .replace(/\s+/g, " ")
+      .trim(),
+    projectOverviewHtml: row["Project Overview"] || "",
+    categorySlugs: String(row["Porfolio Category"] || "")
+      .split(";")
+      .map((s) => s.trim())
+      .filter(Boolean),
+    galleryUrls: String(row["Project Imges"] || "")
+      .split(";")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  }));
+}
+
 function portfolioDetailHref(slug) {
   return `detail_portfolio.html?slug=${encodeURIComponent(slug)}`;
 }
@@ -390,12 +417,30 @@ function mergeReadHtml() {
   });
 }
 
+function mergeDetailPortfolioHtml(categoryBySlug) {
+  writeHtml("detail_portfolio.html", ($) => {
+    const payload = {
+      categories: Object.fromEntries(categoryBySlug),
+      items: buildPortfolioDetailPayloadRows(),
+    };
+    const $json = $("<script></script>")
+      .attr("type", "application/json")
+      .attr("id", "__cms_portfolio_detail")
+      .text(JSON.stringify(payload));
+    $("body").append($json);
+    $("body").append(
+      '<script src="js/cms-portfolio-detail.js" defer></script>',
+    );
+  });
+}
+
 function main() {
   const categoryBySlug = loadCategoryMap();
   mergeIndexHtml(categoryBySlug);
   mergePortfolioHtml(categoryBySlug);
   mergeServicesHtml(categoryBySlug);
   mergeReadHtml();
+  mergeDetailPortfolioHtml(categoryBySlug);
   console.log("[merge-cms] Done.");
 }
 
