@@ -50,6 +50,14 @@ function LoginForm() {
         <strong>Authentication → Users → Add user</strong> (set email + password,
         or send invite and set a password).
       </p>
+      {err === "config" && (
+        <p className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+          Supabase is not configured. Add{" "}
+          <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+          <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to{" "}
+          <code>.env.local</code>, then restart <code>npm run dev</code>.
+        </p>
+      )}
       {err === "forbidden" && (
         <p className="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           You are signed in, but this account is not allowed for admin. Add

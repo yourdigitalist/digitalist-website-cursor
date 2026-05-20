@@ -8,9 +8,11 @@ import { fileURLToPath } from "node:url";
 import { load } from "cheerio";
 import { parse } from "csv-parse/sync";
 import { loadCmsFromSupabaseIfConfigured } from "./cms-supabase-load.mjs";
+import { loadEnvLocal } from "./load-env-local.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
+loadEnvLocal(ROOT);
 const WEBFLOW = path.join(ROOT, "webflow");
 const PUBLIC = path.join(ROOT, "public");
 const CMS = path.join(WEBFLOW, "CMS");

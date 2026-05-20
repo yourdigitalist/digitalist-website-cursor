@@ -1,8 +1,7 @@
 /**
  * Load CMS rows from Supabase (when SUPABASE_SERVICE_ROLE_KEY is set).
- * Returns CSV-shaped rows for merge-cms.mjs.
+ * Uses PostgREST fetch (no realtime/WebSocket — safe in Node build scripts).
  */
-import { createClient } from "@supabase/supabase-js";
 
 function boolDb(v) {
   return v ? "true" : "false";
@@ -57,35 +56,48 @@ function testimonialToCsv(r) {
   };
 }
 
+async function restGet(baseUrl, key, path) {
+  const res = await fetch(`${baseUrl}/rest/v1/${path}`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${path}: ${res.status} ${text.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
 export async function loadCmsFromSupabaseIfConfigured() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
 
-  const sb = createClient(url, key, { auth: { persistSession: false } });
+  try {
+    const [cats, portfolios, articles, testimonials] = await Promise.all([
+      restGet(url, key, "portfolio_categories?select=slug,name&order=name"),
+      restGet(url, key, "portfolios?select=*&order=published_on.desc"),
+      restGet(url, key, "articles?select=*&order=published_on.desc"),
+      restGet(url, key, "testimonials?select=*&order=sort_order"),
+    ]);
 
-  const [cats, portfolios, articles, testimonials] = await Promise.all([
-    sb.from("portfolio_categories").select("slug, name").order("name"),
-    sb.from("portfolios").select("*").order("published_on", { ascending: false }),
-    sb.from("articles").select("*").order("published_on", { ascending: false }),
-    sb.from("testimonials").select("*").order("sort_order", { ascending: true }),
-  ]);
+    const categoryMap = new Map();
+    for (const c of cats) {
+      categoryMap.set(c.slug, c.name);
+    }
 
-  if (cats.error || portfolios.error || articles.error || testimonials.error) {
-    console.warn("[merge-cms] Supabase load failed, falling back to CSV");
+    console.log("[merge-cms] Using Supabase CMS data");
+    return {
+      categoryMap,
+      portfolios: portfolios.map(portfolioToCsv),
+      articles: articles.map(articleToCsv),
+      testimonials: testimonials.map(testimonialToCsv),
+    };
+  } catch (err) {
+    console.warn("[merge-cms] Supabase load failed, falling back to CSV:", err.message);
     return null;
   }
-
-  const categoryMap = new Map();
-  for (const c of cats.data || []) {
-    categoryMap.set(c.slug, c.name);
-  }
-
-  console.log("[merge-cms] Using Supabase CMS data");
-  return {
-    categoryMap,
-    portfolios: (portfolios.data || []).map(portfolioToCsv),
-    articles: (articles.data || []).map(articleToCsv),
-    testimonials: (testimonials.data || []).map(testimonialToCsv),
-  };
 }
