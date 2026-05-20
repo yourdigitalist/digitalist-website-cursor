@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deletePortfolio, savePortfolio } from "../actions/cms";
+import { deletePortfolio, duplicatePortfolio, savePortfolio } from "../actions/cms";
+import { DuplicateButton } from "./DuplicateButton";
 import { ImageField } from "./ImageField";
 
 export type PortfolioRow = {
@@ -159,21 +160,27 @@ export function PortfolioForm({
           {pending ? "Saving…" : "Save"}
         </button>
         {item?.id ? (
-          <button
-            type="button"
-            disabled={pending}
-            className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
-            onClick={() => {
-              if (!confirm("Delete this portfolio item?")) return;
-              startTransition(async () => {
-                await deletePortfolio(item.id);
-                router.push("/admin/portfolios");
-                router.refresh();
-              });
-            }}
-          >
-            Delete
-          </button>
+          <>
+            <DuplicateButton
+              duplicate={() => duplicatePortfolio(item.id)}
+              redirectTo={(id) => `/admin/portfolios/${id}`}
+            />
+            <button
+              type="button"
+              disabled={pending}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
+              onClick={() => {
+                if (!confirm("Delete this portfolio item?")) return;
+                startTransition(async () => {
+                  await deletePortfolio(item.id);
+                  router.push("/admin/portfolios");
+                  router.refresh();
+                });
+              }}
+            >
+              Delete
+            </button>
+          </>
         ) : null}
       </div>
     </form>

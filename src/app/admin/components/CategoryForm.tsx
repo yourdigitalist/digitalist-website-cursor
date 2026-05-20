@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deleteCategory, saveCategory } from "../actions/cms";
+import { deleteCategory, duplicateCategory, saveCategory } from "../actions/cms";
+import { DuplicateButton } from "./DuplicateButton";
 
 export type CategoryRow = { id: string; slug: string; name: string };
 
@@ -56,21 +57,27 @@ export function CategoryForm({ item }: { item?: CategoryRow }) {
           Save
         </button>
         {item?.id ? (
-          <button
-            type="button"
-            disabled={pending}
-            className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
-            onClick={() => {
-              if (!confirm("Delete category?")) return;
-              startTransition(async () => {
-                await deleteCategory(item.id);
-                router.push("/admin/categories");
-                router.refresh();
-              });
-            }}
-          >
-            Delete
-          </button>
+          <>
+            <DuplicateButton
+              duplicate={() => duplicateCategory(item.id)}
+              redirectTo={(id) => `/admin/categories/${id}`}
+            />
+            <button
+              type="button"
+              disabled={pending}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
+              onClick={() => {
+                if (!confirm("Delete category?")) return;
+                startTransition(async () => {
+                  await deleteCategory(item.id);
+                  router.push("/admin/categories");
+                  router.refresh();
+                });
+              }}
+            >
+              Delete
+            </button>
+          </>
         ) : null}
       </div>
     </form>

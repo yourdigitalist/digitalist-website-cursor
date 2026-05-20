@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deleteArticle, saveArticle } from "../actions/cms";
+import { deleteArticle, duplicateArticle, saveArticle } from "../actions/cms";
+import { DuplicateButton } from "./DuplicateButton";
 import { ImageField } from "./ImageField";
 
 export type ArticleRow = {
@@ -137,21 +138,27 @@ export function ArticleForm({ item }: { item?: ArticleRow }) {
           {pending ? "Saving…" : "Save"}
         </button>
         {item?.id ? (
-          <button
-            type="button"
-            disabled={pending}
-            className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
-            onClick={() => {
-              if (!confirm("Delete this article?")) return;
-              startTransition(async () => {
-                await deleteArticle(item.id);
-                router.push("/admin/articles");
-                router.refresh();
-              });
-            }}
-          >
-            Delete
-          </button>
+          <>
+            <DuplicateButton
+              duplicate={() => duplicateArticle(item.id)}
+              redirectTo={(id) => `/admin/articles/${id}`}
+            />
+            <button
+              type="button"
+              disabled={pending}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
+              onClick={() => {
+                if (!confirm("Delete this article?")) return;
+                startTransition(async () => {
+                  await deleteArticle(item.id);
+                  router.push("/admin/articles");
+                  router.refresh();
+                });
+              }}
+            >
+              Delete
+            </button>
+          </>
         ) : null}
       </div>
     </form>

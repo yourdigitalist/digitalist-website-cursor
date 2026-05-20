@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deleteTestimonial, saveTestimonial } from "../actions/cms";
+import { deleteTestimonial, duplicateTestimonial, saveTestimonial } from "../actions/cms";
+import { DuplicateButton } from "./DuplicateButton";
 import { ImageField } from "./ImageField";
 
 export type TestimonialRow = {
@@ -110,21 +111,27 @@ export function TestimonialForm({ item }: { item?: TestimonialRow }) {
           {pending ? "Saving…" : "Save"}
         </button>
         {item?.id ? (
-          <button
-            type="button"
-            disabled={pending}
-            className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
-            onClick={() => {
-              if (!confirm("Delete this testimonial?")) return;
-              startTransition(async () => {
-                await deleteTestimonial(item.id);
-                router.push("/admin/testimonials");
-                router.refresh();
-              });
-            }}
-          >
-            Delete
-          </button>
+          <>
+            <DuplicateButton
+              duplicate={() => duplicateTestimonial(item.id)}
+              redirectTo={(id) => `/admin/testimonials/${id}`}
+            />
+            <button
+              type="button"
+              disabled={pending}
+              className="rounded border border-red-300 px-4 py-2 text-sm text-red-700"
+              onClick={() => {
+                if (!confirm("Delete this testimonial?")) return;
+                startTransition(async () => {
+                  await deleteTestimonial(item.id);
+                  router.push("/admin/testimonials");
+                  router.refresh();
+                });
+              }}
+            >
+              Delete
+            </button>
+          </>
         ) : null}
       </div>
     </form>

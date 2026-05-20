@@ -11,6 +11,138 @@ function slugify(s: string) {
     .replace(/^-|-$/g, "");
 }
 
+/** e.g. `my-project` → `my-project-copy`, then `my-project-copy-2`, … */
+async function nextCopySlug(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  table: string,
+  slug: string,
+) {
+  const root = slug.replace(/(-copy)(-\d+)?$/, "") || slug;
+  for (let i = 1; i < 50; i++) {
+    const candidate = i === 1 ? `${root}-copy` : `${root}-copy-${i}`;
+    const { count } = await supabase
+      .from(table)
+      .select("id", { count: "exact", head: true })
+      .eq("slug", candidate);
+    if (!count) return candidate;
+  }
+  return `${root}-copy-${Date.now()}`;
+}
+
+export async function duplicatePortfolio(id: string) {
+  const { supabase } = await requireAdmin();
+  const { data: row, error: fetchError } = await supabase
+    .from("portfolios")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError || !row) throw new Error("Portfolio not found");
+
+  const slug = await nextCopySlug(supabase, "portfolios", row.slug);
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = row;
+  const insert = {
+    ...rest,
+    slug,
+    name: `${row.name} (copy)`,
+    draft: true,
+    featured: false,
+  };
+
+  const { data, error } = await supabase
+    .from("portfolios")
+    .insert(insert)
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/portfolios");
+  return { id: data.id };
+}
+
+export async function duplicateArticle(id: string) {
+  const { supabase } = await requireAdmin();
+  const { data: row, error: fetchError } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError || !row) throw new Error("Article not found");
+
+  const slug = await nextCopySlug(supabase, "articles", row.slug);
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = row;
+  const insert = {
+    ...rest,
+    slug,
+    title: `${row.title} (copy)`,
+    draft: true,
+    featured: false,
+  };
+
+  const { data, error } = await supabase
+    .from("articles")
+    .insert(insert)
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/articles");
+  return { id: data.id };
+}
+
+export async function duplicateTestimonial(id: string) {
+  const { supabase } = await requireAdmin();
+  const { data: row, error: fetchError } = await supabase
+    .from("testimonials")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError || !row) throw new Error("Testimonial not found");
+
+  const slug = await nextCopySlug(supabase, "testimonials", row.slug);
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = row;
+  const insert = {
+    ...rest,
+    slug,
+    display_name: `${row.display_name} (copy)`,
+    draft: true,
+    sort_order: (row.sort_order ?? 0) + 1,
+  };
+
+  const { data, error } = await supabase
+    .from("testimonials")
+    .insert(insert)
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/testimonials");
+  return { id: data.id };
+}
+
+export async function duplicateCategory(id: string) {
+  const { supabase } = await requireAdmin();
+  const { data: row, error: fetchError } = await supabase
+    .from("portfolio_categories")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError || !row) throw new Error("Category not found");
+
+  const slug = await nextCopySlug(supabase, "portfolio_categories", row.slug);
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = row;
+  const insert = {
+    ...rest,
+    slug,
+    name: `${row.name} (copy)`,
+  };
+
+  const { data, error } = await supabase
+    .from("portfolio_categories")
+    .insert(insert)
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/categories");
+  return { id: data.id };
+}
+
 export async function savePortfolio(formData: FormData) {
   const { supabase } = await requireAdmin();
   const id = String(formData.get("id") || "").trim();
