@@ -29,6 +29,31 @@ async function nextCopySlug(
   return `${root}-copy-${Date.now()}`;
 }
 
+async function nextPortfolioSortOrder(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+) {
+  const { data } = await supabase
+    .from("portfolios")
+    .select("sort_order")
+    .order("sort_order", { ascending: true })
+    .limit(1);
+  return (data?.[0]?.sort_order ?? 0) - 1;
+}
+
+export async function reorderPortfolios(orderedIds: string[]) {
+  const { supabase } = await requireAdmin();
+  if (!orderedIds.length) return;
+
+  const updates = orderedIds.map((id, index) =>
+    supabase.from("portfolios").update({ sort_order: index }).eq("id", id),
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
+
+  revalidatePath("/admin/portfolios");
+}
+
 export async function duplicatePortfolio(id: string) {
   const { supabase } = await requireAdmin();
   const { data: row, error: fetchError } = await supabase
@@ -39,13 +64,21 @@ export async function duplicatePortfolio(id: string) {
   if (fetchError || !row) throw new Error("Portfolio not found");
 
   const slug = await nextCopySlug(supabase, "portfolios", row.slug);
-  const { id: _id, created_at: _c, updated_at: _u, ...rest } = row;
+  const sort_order = await nextPortfolioSortOrder(supabase);
+  const {
+    id: _id,
+    created_at: _c,
+    updated_at: _u,
+    sort_order: _s,
+    ...rest
+  } = row;
   const insert = {
     ...rest,
     slug,
     name: `${row.name} (copy)`,
     draft: true,
     featured: false,
+    sort_order,
   };
 
   const { data, error } = await supabase
@@ -184,11 +217,13 @@ export async function savePortfolio(formData: FormData) {
     return { id };
   }
 
-  if (!isDraft) {
-    row.published_on = new Date().toISOString();
-  }
+  const insert = {
+    ...row,
+    sort_order: await nextPortfolioSortOrder(supabase),
+    ...(isDraft ? {} : { published_on: new Date().toISOString() }),
+  };
 
-  const { data, error } = await supabase.from("portfolios").insert(row).select("id").single();
+  const { data, error } = await supabase.from("portfolios").insert(insert).select("id").single();
   if (error) throw new Error(error.message);
   revalidatePath("/admin/portfolios");
   return { id: data.id };

@@ -85,6 +85,20 @@ function cmsRowDate(r) {
   );
 }
 
+function cmsRowOrder(r) {
+  const n = parseInt(String(r.Order ?? ""), 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function sortCmsRows(rows) {
+  return [...rows].sort((a, b) => {
+    const ao = cmsRowOrder(a);
+    const bo = cmsRowOrder(b);
+    if (ao !== null && bo !== null && ao !== bo) return ao - bo;
+    return cmsRowDate(b) - cmsRowDate(a);
+  });
+}
+
 function loadFeaturedPortfolios() {
   const rows = supabaseCms?.portfolios ?? readCsv(
     "Digitalist - Portfolios - 65950bfde87a28467fc3f42e.csv",
@@ -100,20 +114,22 @@ function loadPublishedPortfolios() {
   const rows = supabaseCms?.portfolios ?? readCsv(
     "Digitalist - Portfolios - 65950bfde87a28467fc3f42e.csv",
   );
-  return rows
-    .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
-    .filter((r) => r.Slug && r.Name)
-    .sort((a, b) => cmsRowDate(b) - cmsRowDate(a));
+  return sortCmsRows(
+    rows
+      .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
+      .filter((r) => r.Slug && r.Name),
+  );
 }
 
 function loadPublishedArticles() {
   const rows = supabaseCms?.articles ?? readCsv(
     "Digitalist - Articles - 657bb758af4d44e56a434824.csv",
   );
-  return rows
-    .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
-    .filter((r) => r.Slug && r.Name)
-    .sort((a, b) => cmsRowDate(b) - cmsRowDate(a));
+  return sortCmsRows(
+    rows
+      .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
+      .filter((r) => r.Slug && r.Name),
+  );
 }
 
 /** Minimal fields for client-side `detail_portfolio.html?slug=` hydration. */

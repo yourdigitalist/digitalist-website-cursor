@@ -26,6 +26,7 @@ function portfolioToCsv(r) {
     "Published On": r.published_on || "",
     "Created On": r.created_at || "",
     "Updated On": r.updated_at || "",
+    Order: String(r.sort_order ?? 0),
   };
 }
 
@@ -81,7 +82,7 @@ export async function loadCmsFromSupabaseIfConfigured() {
   try {
     const [cats, portfolios, articles, testimonials] = await Promise.all([
       restGet(url, key, "portfolio_categories?select=slug,name&order=name"),
-      restGet(url, key, "portfolios?select=*&order=updated_at.desc"),
+      restGet(url, key, "portfolios?select=*&order=sort_order.asc"),
       restGet(url, key, "articles?select=*&order=published_on.desc"),
       restGet(url, key, "testimonials?select=*&order=sort_order"),
     ]);
