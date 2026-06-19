@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deletePortfolio, duplicatePortfolio, savePortfolio } from "../actions/cms";
 import { DuplicateButton } from "./DuplicateButton";
+import { GalleryImagesField } from "./GalleryImagesField";
 import { ImageField } from "./ImageField";
 
 export type PortfolioRow = {
@@ -89,16 +90,7 @@ export function PortfolioForm({
       <ImageField label="Main image" name="main_image" value={mainImage} onChange={setMainImage} />
       <ImageField label="Thumbnail" name="thumbnail_image" value={thumbImage} onChange={setThumbImage} />
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-700">Gallery images</label>
-        <p className="mb-1 text-xs text-zinc-500">One URL per line (or semicolon-separated)</p>
-        <textarea
-          name="project_images"
-          rows={4}
-          defaultValue={(item?.project_images || "").replace(/;\s*/g, "\n")}
-          className="w-full rounded border border-zinc-300 px-3 py-2 text-sm font-mono"
-        />
-      </div>
+      <GalleryImagesField name="project_images" defaultValue={item?.project_images} />
 
       <div>
         <label className="block text-sm font-medium text-zinc-700">Short summary</label>

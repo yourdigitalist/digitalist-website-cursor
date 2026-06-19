@@ -1,0 +1,41 @@
+/* Portfolio detail page — full-width stacked gallery (matches post body width) */
+.collection-list-wrapper-3 {
+  width: 100%;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2rem;
+}
+
+.collection-list-wrapper-3 .collection-list-5 {
+  flex-flow: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.collection-list-wrapper-3 .collection-item-5 {
+  width: 100%;
+}
+
+.collection-list-wrapper-3 .gallery-image {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  overflow: visible;
+}
+
+.collection-list-wrapper-3 .gallery-image.w-container {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.collection-list-wrapper-3 .image-21 {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+}

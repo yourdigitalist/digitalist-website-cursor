@@ -435,6 +435,11 @@ function mergeDetailPortfolioHtml(categoryBySlug) {
       .attr("id", "__cms_portfolio_detail")
       .text(JSON.stringify(payload));
     $("body").append($json);
+    if (!$('link[href="css/cms-portfolio-detail.css"]').length) {
+      $("head").append(
+        '<link href="css/cms-portfolio-detail.css" rel="stylesheet" type="text/css">',
+      );
+    }
     $("body").append(
       '<script src="js/cms-portfolio-detail.js" defer></script>',
     );
