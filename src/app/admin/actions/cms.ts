@@ -151,6 +151,8 @@ export async function savePortfolio(formData: FormData) {
   if (!name) throw new Error("Name is required");
   if (!slug) slug = slugify(name);
 
+  const isDraft = formData.get("draft") === "on";
+
   const row = {
     slug,
     name,
@@ -169,7 +171,7 @@ export async function savePortfolio(formData: FormData) {
         .join("; ") || null,
     category_slugs: String(formData.get("category_slugs") || "").trim() || null,
     featured: formData.get("featured") === "on",
-    draft: formData.get("draft") === "on",
+    draft: isDraft,
     archived: formData.get("archived") === "on",
     updated_at: new Date().toISOString(),
   };
@@ -180,6 +182,10 @@ export async function savePortfolio(formData: FormData) {
     revalidatePath("/admin/portfolios");
     revalidatePath(`/admin/portfolios/${id}`);
     return { id };
+  }
+
+  if (!isDraft) {
+    row.published_on = new Date().toISOString();
   }
 
   const { data, error } = await supabase.from("portfolios").insert(row).select("id").single();

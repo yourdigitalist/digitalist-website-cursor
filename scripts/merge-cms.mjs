@@ -79,6 +79,12 @@ function loadTestimonials() {
   return deduped;
 }
 
+function cmsRowDate(r) {
+  return (
+    Date.parse(r["Published On"] || r["Updated On"] || r["Created On"] || "") || 0
+  );
+}
+
 function loadFeaturedPortfolios() {
   const rows = supabaseCms?.portfolios ?? readCsv(
     "Digitalist - Portfolios - 65950bfde87a28467fc3f42e.csv",
@@ -97,11 +103,7 @@ function loadPublishedPortfolios() {
   return rows
     .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
     .filter((r) => r.Slug && r.Name)
-    .sort((a, b) => {
-      const da = Date.parse(a["Published On"] || a["Created On"] || "") || 0;
-      const db = Date.parse(b["Published On"] || b["Created On"] || "") || 0;
-      return db - da;
-    });
+    .sort((a, b) => cmsRowDate(b) - cmsRowDate(a));
 }
 
 function loadPublishedArticles() {
@@ -111,11 +113,7 @@ function loadPublishedArticles() {
   return rows
     .filter((r) => !isTruthyCsv(r.Archived) && !isTruthyCsv(r.Draft))
     .filter((r) => r.Slug && r.Name)
-    .sort((a, b) => {
-      const da = Date.parse(a["Published On"] || a["Created On"] || "") || 0;
-      const db = Date.parse(b["Published On"] || b["Created On"] || "") || 0;
-      return db - da;
-    });
+    .sort((a, b) => cmsRowDate(b) - cmsRowDate(a));
 }
 
 /** Minimal fields for client-side `detail_portfolio.html?slug=` hydration. */
