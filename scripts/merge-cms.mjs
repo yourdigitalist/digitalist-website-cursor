@@ -232,48 +232,6 @@ function hydratePortfolioPageCard(
   }
 }
 
-/** Services “See some of our work” card layout. */
-function hydrateServicesPortfolioCard(
-  $,
-  $item,
-  row,
-  categoryBySlug,
-  $innerTagTemplate,
-) {
-  const mainImage = row["Main Image"] || row["Thumbnail image"] || "";
-  const href = portfolioDetailHref(row.Slug);
-  const $img = $item.find("img.portfolio-image-featured");
-  if (mainImage && $img.length) {
-    $img.attr("src", mainImage);
-    $img.attr("alt", row.Name || "");
-    $img.removeClass("w-dyn-bind-empty");
-  }
-  const $wrap = $item.find(".portfolio-image-wrapper-2");
-  if ($wrap.length && !$wrap.find("> a").length && $img.length) {
-    const $a = $("<a></a>").attr("href", href).addClass("w-inline-block");
-    $img.wrap($a);
-  }
-  const $h4 = $item.find("h4.heading-4.blog-titles");
-  if ($h4.length) {
-    $h4.empty();
-    $h4.append(
-      $("<a></a>")
-        .attr("href", href)
-        .addClass("w-inline-block")
-        .text(row.Name || ""),
-    );
-    $h4.removeClass("w-dyn-bind-empty");
-  }
-  const desc = (row["Post Summary"] || "").replace(/\s+/g, " ").trim();
-  const $desc = $item.find("p.portfolio-description");
-  if ($desc.length) {
-    $desc.text(desc);
-    $desc.removeClass("w-dyn-bind-empty");
-  }
-  fillPortfolioCategoryChips($item, row, categoryBySlug, $innerTagTemplate);
-  $item.find(".w-dyn-bind-empty").removeClass("w-dyn-bind-empty");
-}
-
 function removeDynEmptyIfHasItems($, $itemsContainer) {
   if (!$itemsContainer.children().length) return;
   const $empty = $itemsContainer
@@ -378,16 +336,15 @@ function mergePortfolioHtml(categoryBySlug) {
 function mergeServicesHtml(categoryBySlug) {
   writeHtml("services.html", ($) => {
     const $pOuter = $(
-      ".collection-list-wrapper.portfolio.w-dyn-list .collection-list.portfolio.w-dyn-items",
+      ".collection-list-wrapper-4.w-dyn-list > .collection-list-6.w-dyn-items",
     ).first();
     if (!$pOuter.length) return;
     const portfolios = loadPublishedPortfolios();
-    const $pTemplate = $pOuter
-      .children(".collection-item.portfolio.w-dyn-item")
-      .first()
-      .clone();
+    const $pTemplate = $pOuter.children(".w-dyn-item").first().clone();
     const $innerItemsTemplate = $pTemplate
-      .find(".portfolio-category-wrapper.w-dyn-list .collection-list-2.w-dyn-items")
+      .find(
+        ".collection-list-wrapper-5.w-dyn-list .collection-list-2.w-dyn-items",
+      )
       .first()
       .children(".portfolio-tags.w-dyn-item")
       .first()
@@ -395,8 +352,7 @@ function mergeServicesHtml(categoryBySlug) {
     $pOuter.empty();
     for (const row of portfolios) {
       const $item = $pTemplate.clone();
-      hydrateServicesPortfolioCard(
-        $,
+      hydrateCompactPortfolioCard(
         $item,
         row,
         categoryBySlug,
