@@ -30,7 +30,7 @@
     .digitalist-ai-banner {
       width: 100%;
       align-self: stretch;
-      margin-top: 24px;
+      margin-top: 11px;
       padding: 24px;
       border-radius: 16px;
       border: 1px solid rgba(28, 26, 23, 0.08);
@@ -80,6 +80,9 @@
       text-align: center;
     }
     @media screen and (max-width: 991px) {
+      .digitalist-ai-banner {
+        margin-top: 0;
+      }
       .digitalist-ai-banner-inner {
         grid-template-columns: 1fr;
       }
@@ -102,6 +105,13 @@
         max-width: 100%;
         text-align: center;
       }
+      .heading-txt {
+        row-gap: 20px;
+      }
+      .container.cta {
+        margin-left: 12px;
+        margin-right: 12px;
+      }
       .conversion-scorecard-image {
         display: block;
         width: 100%;
@@ -114,6 +124,12 @@
         padding-left: 15px;
         padding-right: 15px;
         box-sizing: border-box;
+      }
+    }
+    @media screen and (max-width: 479px) {
+      .container.cta {
+        margin-left: 12px;
+        margin-right: 12px;
       }
     }
   </style>
